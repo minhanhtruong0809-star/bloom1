@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>bloom — your daily space</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="bloom.css">
+</head>
+<body>
+
+<div class="blobs"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+<div class="dots"></div>
+
+<!-- ═══ AUTH ═══ -->
+<div id="auth-screen">
+  <div class="blobs" style="position:fixed"><div class="blob b1"></div><div class="blob b2"></div></div>
+  <div class="auth-card">
+    <div class="auth-logo">bloom<span>.</span></div>
+    <div class="auth-tagline">your gentle daily companion 🌸</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="setAuthMode('login')">Sign In</button>
+      <button class="auth-tab" onclick="setAuthMode('signup')">Sign Up</button>
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+
+    <!-- login -->
+    <div id="login-form">
+      <div class="fl"><label>Email</label><input class="fi" type="email" id="l-email" placeholder="you@email.com"></div>
+      <div class="fl"><label>Password</label><input class="fi" type="password" id="l-pass" placeholder="••••••••"></div>
+      <button class="auth-btn" onclick="doLogin()">Sign In 🌸</button>
+      <div class="auth-switch">No account? <span onclick="setAuthMode('signup')">Sign up free</span></div>
+    </div>
+
+    <!-- signup -->
+    <div id="signup-form" style="display:none">
+      <div class="fl"><label>Your Name</label><input class="fi" type="text" id="s-name" placeholder="e.g. Sofia"></div>
+      <div class="fl"><label>Email</label><input class="fi" type="email" id="s-email" placeholder="you@email.com"></div>
+      <div class="fl"><label>Password</label><input class="fi" type="password" id="s-pass" placeholder="At least 6 characters"></div>
+      <button class="auth-btn" onclick="doSignup()">Create Account ✨</button>
+      <div class="auth-switch">Already have one? <span onclick="setAuthMode('login')">Sign in</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app">
+  <nav>
+    <div class="nav-in">
+      <div class="logo">bloom<em>.</em></div>
+      <div class="nav-tabs">
+        <button class="nt active" onclick="goPage('home',this)">Home</button>
+        <button class="nt" onclick="goPage('tasks',this)">Tasks</button>
+        <button class="nt" onclick="goPage('journal',this)">Journal</button>
+        <button class="nt" onclick="goPage('wellness',this)">Wellness</button>
+      </div>
+      <div class="nav-right">
+        <button class="logout-btn" onclick="doLogout()">Sign out</button>
+        <button class="avatar" onclick="toast('🌸','Hello!','Have a beautiful day.')">🌸</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══ HOME ══ -->
+  <div class="page active" id="page-home">
+    <div class="wrap">
+      <div class="home-hero">
+        <div class="home-greeting">Good <em id="greet-time">morning</em>, <span id="greet-name">friend</span> 🌷</div>
+        <div class="home-date" id="home-date"></div>
+      </div>
+      <div class="summary-grid">
+        <div class="sum-card" onclick="goPage('tasks',document.querySelectorAll('.nt')[1])">
+          <div class="sum-card-accent" style="background:linear-gradient(90deg,var(--rose),var(--lav))"></div>
+          <div class="sum-icon">🎯</div>
+          <div class="sum-label">Tasks</div>
+          <div class="sum-title" id="sum-tasks-title">3 of 5 done</div>
+          <div class="sum-detail" id="sum-tasks-detail">2 goals in progress today</div>
+          <div class="pbar-wrap"><div class="pbar" id="sum-tasks-bar" style="width:60%;background:linear-gradient(90deg,var(--rose),var(--lav))"></div></div>
+        </div>
+        <div class="sum-card" onclick="goPage('journal',document.querySelectorAll('.nt')[2])">
+          <div class="sum-card-accent" style="background:linear-gradient(90deg,var(--lav),var(--sky))"></div>
+          <div class="sum-icon">📖</div>
+          <div class="sum-label">Journal</div>
+          <div class="sum-title" id="sum-journal-title">Not written yet</div>
+          <div class="sum-detail" id="sum-journal-detail">Tap to open your journal</div>
+          <div class="pbar-wrap"><div class="pbar" id="sum-journal-bar" style="width:0%;background:linear-gradient(90deg,var(--lav),var(--sky))"></div></div>
+        </div>
+        <div class="sum-card" onclick="goPage('wellness',document.querySelectorAll('.nt')[3])">
+          <div class="sum-card-accent" style="background:linear-gradient(90deg,var(--mint),var(--sky))"></div>
+          <div class="sum-icon">🌿</div>
+          <div class="sum-label">Wellness</div>
+          <div class="sum-title" id="sum-well-title">0 / 8 cups</div>
+          <div class="sum-detail" id="sum-well-detail">Hydration · Sleep · Breathing</div>
+          <div class="pbar-wrap"><div class="pbar" id="sum-well-bar" style="width:0%;background:linear-gradient(90deg,var(--mint),var(--sky))"></div></div>
+        </div>
+      </div>
+      <div class="home-quote">
+        <div class="hq-text" id="hq-text">"Bloom where you are planted."</div>
+        <div class="hq-by" id="hq-by">— Saint Francis de Sales</div>
+        <button class="btn btn-soft btn-mini" style="margin-top:16px" onclick="nextQuote()">New quote ✨</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TASKS ══ -->
+  <div class="page" id="page-tasks">
+    <div class="wrap">
+      <div class="tasks-header">
+        <div class="ph">My <em>Tasks</em></div>
+        <button class="btn btn-rose" onclick="openAddGoal()">+ Add Goal</button>
+      </div>
+      <div class="goals-grid" id="goals-grid"></div>
+    </div>
+  </div>
+
+  <!-- ══ JOURNAL ══ -->
+  <div class="page" id="page-journal">
+    <div class="wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+        <div class="ph">My <em>Journal</em></div>
+        <div style="font-size:13px;color:var(--ink-3)" id="j-autosave">Ready to write</div>
+      </div>
+      <div class="journal-grid">
+        <div class="jl-main">
+
+          <!-- Write space -->
+          <div class="widget" id="w-write" style="position:relative">
+            <div id="j-lock-overlay" class="lock-overlay" style="display:none">
+              <div class="lock-icon">🔒</div>
+              <div class="lock-msg">This entry is locked</div>
+              <div class="lock-sub">Enter your journal password to read</div>
+              <input class="fi" type="password" id="unlock-input" placeholder="Password…" style="width:220px;text-align:center">
+              <button class="btn btn-rose btn-mini" onclick="tryUnlock()">Unlock</button>
+            </div>
+            <div class="widget-head">
+              <div class="widget-title">✍️ Write Space</div>
+              <div class="widget-controls">
+                <button class="wc-btn" id="lock-btn" onclick="toggleLock()">🔓 Lock</button>
+                <button class="wc-btn" onclick="toggleWidget('w-write')">Hide</button>
+                <button class="wc-btn del" onclick="confirmDelete('w-write','Write Space')">Remove</button>
+              </div>
+            </div>
+            <div class="widget-body">
+              <textarea class="jarea" id="j-text" placeholder="Start here… this space belongs to you." oninput="jAutoSave()"></textarea>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;flex-wrap:wrap;gap:10px">
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn btn-soft btn-mini" onclick="saveEntry()">💾 Save Entry</button>
+                  <button class="lock-btn" id="lock-toggle-btn" onclick="toggleLock()">🔓 Lock Entry</button>
+                </div>
+                <div style="font-size:12px;color:var(--ink-3)">Entry password: <b id="j-pass-hint" style="color:var(--rose-d)">not set</b></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image upload -->
+          <div class="widget" id="w-images">
+            <div class="widget-head">
+              <div class="widget-title">🖼️ Images</div>
+              <div class="widget-controls">
+                <button class="wc-btn" onclick="toggleWidget('w-images')">Hide</button>
+                <button class="wc-btn del" onclick="confirmDelete('w-images','Images')">Remove</button>
+              </div>
+            </div>
+            <div class="widget-body">
+              <label class="img-drop" id="img-drop-area">
+                <input type="file" id="img-input" accept="image/*" multiple onchange="handleImages(event)">
+                <div style="font-size:28px;margin-bottom:6px">📷</div>
+                <div style="font-weight:700;font-size:14px;color:var(--ink-2)">Drop images or click to upload</div>
+                <div style="font-size:12px;color:var(--ink-3);margin-top:4px">Add photos to your entry</div>
+              </label>
+              <div class="img-preview" id="img-preview"></div>
+            </div>
+          </div>
+
+          <!-- Rating of the day -->
+          <div class="widget" id="w-rating">
+            <div class="widget-head">
+              <div class="widget-title">⭐ Day Rating</div>
+              <div class="widget-controls">
+                <button class="wc-btn" onclick="toggleWidget('w-rating')">Hide</button>
+                <button class="wc-btn del" onclick="confirmDelete('w-rating','Day Rating')">Remove</button>
+              </div>
+            </div>
+            <div class="widget-body">
+              <div style="font-size:14px;color:var(--ink-2);margin-bottom:8px">How was your day overall?</div>
+              <div class="star-row" id="star-row"></div>
+              <div style="font-size:13px;color:var(--ink-3);margin-top:10px" id="rating-label">Tap a star to rate</div>
+            </div>
+          </div>
+
+          <!-- Past entries -->
+          <div class="widget" id="w-entries">
+            <div class="widget-head">
+              <div class="widget-title">📚 Past Entries</div>
+              <div class="widget-controls">
+                <button class="wc-btn" onclick="toggleWidget('w-entries')">Hide</button>
+                <button class="wc-btn del" onclick="confirmDelete('w-entries','Past Entries')">Remove</button>
+              </div>
+            </div>
+            <div class="widget-body" id="past-entries-body"></div>
+          </div>
+        </div>
+
+        <div class="jl-side">
+          <!-- Prompts -->
+          <div class="widget" id="w-prompts">
+            <div class="widget-head">
+              <div class="widget-title">💡 Prompts</div>
+              <div class="widget-controls">
+                <button class="wc-btn" onclick="toggleWidget('w-prompts')">Hide</button>
+                <button class="wc-btn del" onclick="confirmDelete('w-prompts','Prompts')">Remove</button>
+              </div>
+            </div>
+            <div class="widget-body" id="prompts-body"></div>
+          </div>
+
+          <!-- Gratitude -->
+          <div class="widget" id="w-gratitude">
+            <div class="widget-head">
+              <div class="widget-title">🙏 Gratitude</div>
+              <div class="widget-controls">
+                <button class="wc-btn" onclick="toggleWidget('w-gratitude')">Hide</button>
+                <button class="wc-btn del" onclick="confirmDelete('w-gratitude','Gratitude')">Remove</button>
+              </div>
+            </div>
+            <div class="widget-body">
+              <div id="grat-list"></div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <input class="fi" id="grat-input" placeholder="I'm grateful for…"
+                  style="font-size:13px;padding:9px 13px"
+                  onkeydown="if(event.key==='Enter')addGrat()">
+                <button class="btn btn-rose btn-mini" onclick="addGrat()">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WELLNESS ══ -->
+  <div class="page" id="page-wellness">
+    <div class="wrap">
+      <div style="margin-bottom:24px">
+        <div class="ph">Well<em>ness</em></div>
+        <div style="font-size:13px;color:var(--ink-3);margin-top:4px">Small rituals, lasting change.</div>
+      </div>
+      <div class="wellness-grid">
+
+        <!-- Calendar -->
+        <div class="widget" id="w-cal">
+          <div class="widget-head">
+            <div class="widget-title">📅 Calendar</div>
+            <div class="widget-controls">
+              <button class="wc-btn" onclick="toggleWidget('w-cal')">Hide</button>
+              <button class="wc-btn del" onclick="confirmDelete('w-cal','Calendar')">Remove</button>
+            </div>
+          </div>
+          <div class="widget-body">
+            <div class="cal-nav">
+              <button class="calbtn" onclick="calMove(-1)">‹</button>
+              <div class="cal-month" id="cal-month-label"></div>
+              <button class="calbtn" onclick="calMove(1)">›</button>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:12px">🟢 = marked day · click to toggle</div>
+          </div>
+        </div>
+
+        <!-- Breathing -->
+        <div class="widget" id="w-breath">
+          <div class="widget-head">
+            <div class="widget-title">🫁 Breathing</div>
+            <div class="widget-controls">
+              <button class="wc-btn" onclick="toggleWidget('w-breath')">Hide</button>
+              <button class="wc-btn del" onclick="confirmDelete('w-breath','Breathing')">Remove</button>
+            </div>
+          </div>
+          <div class="widget-body" style="text-align:center">
+            <div style="font-size:12px;color:var(--ink-3);margin-bottom:14px">4-4-6 method · Inhale 4 · Hold 4 · Exhale 6</div>
+            <div class="breath-ring" id="breath-ring"
+              style="background:conic-gradient(var(--lav-bg) 0%,var(--lav-bg) 100%);box-shadow:0 0 0 8px var(--lav-bg)">
+              <div class="breath-inner">
+                <div class="breath-num" id="breath-num">4</div>
+                <div class="breath-phase" id="breath-phase">Tap to begin</div>
+              </div>
+            </div>
+            <div class="breath-btns">
+              <button class="btn btn-rose btn-mini" id="breath-start-btn" onclick="toggleBreath()">▶ Start</button>
+              <button class="btn btn-soft btn-mini" onclick="resetBreath()">Reset</button>
+            </div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:12px">Cycles: <b id="breath-cycles">0</b></div>
+          </div>
+        </div>
+
+        <!-- Hydration -->
+        <div class="widget" id="w-water">
+          <div class="widget-head">
+            <div class="widget-title">💧 Hydration</div>
+            <div class="widget-controls">
+              <button class="wc-btn" onclick="toggleWidget('w-water')">Hide</button>
+              <button class="wc-btn del" onclick="confirmDelete('w-water','Hydration')">Remove</button>
+            </div>
+          </div>
+          <div class="widget-body" style="text-align:center">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:600;color:var(--sky)" id="water-num">0</div>
+            <div style="font-size:13px;color:var(--ink-3);margin-bottom:4px">glasses today · goal: <b>8</b></div>
+            <div class="cups-row" id="cups-row"></div>
+            <button class="btn btn-soft btn-mini" style="margin-top:14px" onclick="resetWater()">Reset</button>
+          </div>
+        </div>
+
+        <!-- Sleep -->
+        <div class="widget" id="w-sleep">
+          <div class="widget-head">
+            <div class="widget-title">😴 Sleep</div>
+            <div class="widget-controls">
+              <button class="wc-btn" onclick="toggleWidget('w-sleep')">Hide</button>
+              <button class="wc-btn del" onclick="confirmDelete('w-sleep','Sleep')">Remove</button>
+            </div>
+          </div>
+          <div class="widget-body">
+            <div class="sleep-grid">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.8px;margin-bottom:7px">Bedtime</div>
+                <input class="fi" type="time" id="s-bed" value="22:30" onchange="calcSleep()">
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.8px;margin-bottom:7px">Wake time</div>
+                <input class="fi" type="time" id="s-wake" value="06:45" onchange="calcSleep()">
+              </div>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.8px;margin-bottom:7px">Sleep quality</div>
+            <div class="sleep-stars" id="sleep-stars"></div>
+            <div style="font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.8px;margin:14px 0 7px">Dreams or notes</div>
+            <textarea class="dream-input" id="dream-input" placeholder="Any dreams or sleep notes…"></textarea>
+            <div class="sleep-result" style="margin-top:14px">
+              <div class="sr-label">Total Sleep</div>
+              <div class="sr-val" id="sleep-dur">8h 15m</div>
+              <div class="sr-note" id="sleep-note">🌿 Excellent rest!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Affirmation -->
+        <div class="widget" id="w-aff" style="grid-column:1/-1">
+          <div class="widget-head">
+            <div class="widget-title">✨ Daily Affirmation</div>
+            <div class="widget-controls">
+              <button class="wc-btn" onclick="toggleWidget('w-aff')">Hide</button>
+              <button class="wc-btn del" onclick="confirmDelete('w-aff','Daily Affirmation')">Remove</button>
+            </div>
+          </div>
+          <div class="widget-body" style="text-align:center">
+            <div class="aff-box"><div class="aff-text" id="aff-text">I am worthy of love and peace.</div></div>
+            <button class="btn btn-rose btn-mini" onclick="nextAff()">Next affirmation 🌻</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div><!-- /app -->
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-ov" id="modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title">Modal</div>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast-el">
+  <div class="ti" id="t-icon">🌸</div>
+  <div><div class="tt" id="t-title"></div><div class="tm" id="t-msg"></div></div>
+</div>
+
+<script src="bloom.js"></script>
+</body>
+</html>
