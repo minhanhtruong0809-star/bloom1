@@ -5,7 +5,333 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>bloom — your daily space</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="bloom.css">
+<style>
+:root {
+  --cream:   #fdf9f4;
+  --white:   #ffffff;
+  --rose:    #f0b8c4;
+  --rose-d:  #d9849a;
+  --rose-bg: #fdeef2;
+  --lav:     #c8b8e6;
+  --lav-bg:  #eeeaf8;
+  --mint:    #a6d8c4;
+  --mint-bg: #dff3eb;
+  --peach:   #f5c49c;
+  --peach-bg:#feeedd;
+  --sky:     #a4cee6;
+  --sky-bg:  #daeef8;
+  --sun:     #f5dfa0;
+  --sun-bg:  #fdf5d8;
+  --ink:     #352a35;
+  --ink-2:   #6b586b;
+  --ink-3:   #a892a8;
+  --border:  rgba(160,130,160,0.16);
+  --sh:      0 2px 20px rgba(160,100,140,0.09);
+  --sh-up:   0 8px 40px rgba(160,100,140,0.16);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100%;background:var(--cream);color:var(--ink);font-family:'Nunito',sans-serif;}
+
+/* ── BLOBS ── */
+.blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(72px);opacity:.5;}
+.b1{width:480px;height:480px;background:var(--rose-bg);top:-140px;right:-80px;animation:bd 22s ease-in-out infinite;}
+.b2{width:380px;height:380px;background:var(--lav-bg);bottom:-60px;left:-80px;animation:bd 18s ease-in-out infinite reverse;}
+.b3{width:260px;height:260px;background:var(--mint-bg);top:42%;left:44%;animation:bd 14s ease-in-out infinite 3s;}
+@keyframes bd{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(18px,-22px) scale(1.05);}}
+.dots{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,rgba(160,120,160,.1) 1px,transparent 1px);
+  background-size:26px 26px;}
+
+/* ── AUTH SCREENS ── */
+#auth-screen{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+.auth-card{background:var(--white);border:1px solid var(--border);border-radius:32px;padding:48px 44px;width:420px;max-width:100%;
+  box-shadow:0 24px 80px rgba(160,100,140,.18);position:relative;z-index:1;}
+.auth-logo{font-family:'Cormorant Garamond',serif;font-size:34px;font-style:italic;font-weight:600;color:var(--rose-d);
+  text-align:center;margin-bottom:6px;}
+.auth-logo span{color:var(--lav);}
+.auth-tagline{text-align:center;font-size:13px;color:var(--ink-3);margin-bottom:36px;}
+.auth-tabs{display:flex;background:var(--cream);border-radius:50px;padding:4px;margin-bottom:28px;}
+.auth-tab{flex:1;text-align:center;padding:9px;border-radius:50px;font-size:13px;font-weight:700;cursor:pointer;
+  transition:all .2s;color:var(--ink-3);border:none;background:none;font-family:'Nunito',sans-serif;}
+.auth-tab.active{background:white;color:var(--ink);box-shadow:0 2px 12px rgba(160,100,140,.14);}
+.fl{margin-bottom:18px;}
+.fl label{display:block;font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.8px;margin-bottom:7px;}
+.fi{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px 15px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.fi:focus{border-color:var(--rose);}
+.auth-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--rose),var(--lav));border:none;border-radius:14px;
+  color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;
+  box-shadow:0 4px 20px rgba(210,130,160,.3);transition:all .3s;margin-top:4px;}
+.auth-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(210,130,160,.4);}
+.auth-switch{text-align:center;font-size:12px;color:var(--ink-3);margin-top:18px;}
+.auth-switch span{color:var(--rose-d);cursor:pointer;font-weight:700;}
+.auth-error{background:var(--rose-bg);color:var(--rose-d);border-radius:10px;padding:10px 14px;
+  font-size:13px;margin-bottom:14px;display:none;}
+
+/* ── APP SHELL ── */
+#app{display:none;position:relative;z-index:1;min-height:100vh;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);
+  background:rgba(253,249,244,.9);border-bottom:1px solid var(--border);}
+.nav-in{max-width:1160px;margin:0 auto;padding:0 28px;display:flex;align-items:center;
+  justify-content:space-between;height:62px;}
+.logo{font-family:'Cormorant Garamond',serif;font-size:26px;font-style:italic;font-weight:600;
+  color:var(--rose-d);letter-spacing:.5px;}
+.logo em{color:var(--lav);font-style:normal;}
+.nav-tabs{display:flex;gap:4px;background:rgba(255,255,255,.7);border:1px solid var(--border);
+  border-radius:50px;padding:4px;}
+.nt{padding:7px 20px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .2s;color:var(--ink-2);border:none;background:none;font-family:'Nunito',sans-serif;}
+.nt.active{background:white;color:var(--ink);box-shadow:0 2px 14px rgba(160,100,140,.14);}
+.nt:hover:not(.active){color:var(--ink);background:rgba(255,255,255,.5);}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--lav));
+  display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;
+  box-shadow:0 2px 10px rgba(160,100,140,.2);transition:transform .2s;border:none;}
+.avatar:hover{transform:scale(1.08);}
+.logout-btn{font-size:12px;color:var(--ink-3);cursor:pointer;font-weight:600;background:none;border:none;
+  font-family:'Nunito',sans-serif;padding:6px 10px;border-radius:8px;transition:all .2s;}
+.logout-btn:hover{color:var(--rose-d);background:var(--rose-bg);}
+
+/* ── PAGES ── */
+.page{display:none;padding:40px 0 80px;}
+.page.active{display:block;}
+.wrap{max-width:1160px;margin:0 auto;padding:0 28px;}
+
+/* ── SECTION WIDGET (collapsible/deletable blocks) ── */
+.widget{background:white;border:1px solid var(--border);border-radius:24px;
+  padding:28px;box-shadow:var(--sh);margin-bottom:20px;transition:box-shadow .3s;}
+.widget:hover{box-shadow:var(--sh-up);}
+.widget-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.widget-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.widget-controls{display:flex;gap:6px;}
+.wc-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 10px;
+  font-size:11px;font-weight:700;cursor:pointer;color:var(--ink-3);font-family:'Nunito',sans-serif;transition:all .2s;}
+.wc-btn:hover{border-color:var(--rose);color:var(--rose-d);background:var(--rose-bg);}
+.wc-btn.del:hover{border-color:#e88;color:#c44;background:#fee8e8;}
+.widget-body{}
+.widget.collapsed .widget-body{display:none;}
+.widget.collapsed .widget-head{margin-bottom:0;}
+
+/* ── HOME ── */
+.home-hero{padding:48px 0 36px;text-align:center;}
+.home-greeting{font-family:'Cormorant Garamond',serif;font-size:clamp(36px,5vw,60px);font-weight:300;line-height:1.15;margin-bottom:10px;}
+.home-greeting em{font-style:italic;color:var(--rose-d);}
+.home-date{font-size:13px;color:var(--ink-3);margin-bottom:40px;}
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:40px;}
+.sum-card{background:white;border:1px solid var(--border);border-radius:22px;padding:24px;
+  box-shadow:var(--sh);cursor:pointer;transition:all .3s;text-align:left;position:relative;overflow:hidden;}
+.sum-card:hover{transform:translateY(-3px);box-shadow:var(--sh-up);}
+.sum-card-accent{position:absolute;top:0;left:0;right:0;height:4px;border-radius:22px 22px 0 0;}
+.sum-icon{font-size:28px;margin-bottom:12px;}
+.sum-label{font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:.8px;margin-bottom:8px;}
+.sum-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+.sum-detail{font-size:13px;color:var(--ink-2);}
+.pbar-wrap{background:rgba(160,130,160,.12);border-radius:6px;height:6px;overflow:hidden;margin-top:14px;}
+.pbar{height:100%;border-radius:6px;transition:width .8s cubic-bezier(.175,.885,.32,1.275);}
+.home-quote{background:linear-gradient(135deg,var(--lav-bg),var(--rose-bg));border-radius:22px;
+  padding:32px;text-align:center;margin-top:8px;}
+.hq-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;font-weight:400;
+  line-height:1.65;color:var(--ink);margin-bottom:10px;}
+.hq-by{font-size:12px;color:var(--ink-3);font-weight:700;letter-spacing:.8px;}
+
+/* ── TASKS ── */
+.tasks-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
+.ph{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:300;}
+.ph em{font-style:italic;color:var(--rose-d);}
+.goals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.goal-card{background:white;border:1px solid var(--border);border-radius:22px;padding:26px;
+  box-shadow:var(--sh);transition:all .3s;position:relative;overflow:hidden;}
+.goal-card:hover{transform:translateY(-3px);box-shadow:var(--sh-up);}
+.gc-top{height:5px;border-radius:22px 22px 0 0;position:absolute;top:0;left:0;right:0;}
+.gc-emoji{font-size:32px;margin:8px 0 12px;}
+.gc-title{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;margin-bottom:5px;}
+.gc-desc{font-size:13px;color:var(--ink-2);line-height:1.6;margin-bottom:18px;}
+.goal-card.completed .gc-title,.goal-card.completed .gc-desc{text-decoration:line-through;color:var(--ink-3);}
+.goal-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.goal-check{display:flex;align-items:center;gap:7px;border:0;background:none;color:var(--ink-2);
+  font:600 12px 'Nunito',sans-serif;cursor:pointer;padding:4px 0;}
+.goal-check input{width:18px;height:18px;accent-color:var(--rose-d);cursor:pointer;}
+.add-goal-card{border:2px dashed var(--border);background:transparent;box-shadow:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:180px;color:var(--ink-3);font-size:13px;gap:10px;cursor:pointer;}
+.add-goal-card:hover{border-color:var(--rose);color:var(--rose-d);background:var(--rose-bg);}
+
+/* ── JOURNAL ── */
+.journal-grid{display:grid;grid-template-columns:1fr 300px;gap:20px;}
+.jl-main{}
+.jl-side{}
+/* write space */
+.jarea{width:100%;min-height:160px;background:var(--cream);border:1.5px solid var(--border);
+  border-radius:14px;padding:16px;font-family:'Nunito',sans-serif;font-size:14px;
+  color:var(--ink);resize:vertical;outline:none;transition:border-color .2s;line-height:1.85;}
+.jarea:focus{border-color:var(--lav);}
+.jarea::placeholder{color:var(--ink-3);font-style:italic;}
+/* rating */
+.star-row{display:flex;gap:8px;margin-top:8px;}
+.star{font-size:28px;cursor:pointer;transition:transform .15s;filter:grayscale(1) opacity(.4);}
+.star.lit{filter:none;}
+.star:hover{transform:scale(1.15);}
+/* lock entry */
+.lock-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;
+  border:1.5px solid var(--border);background:white;font-size:12px;font-weight:700;
+  cursor:pointer;color:var(--ink-2);font-family:'Nunito',sans-serif;transition:all .2s;}
+.lock-btn:hover{border-color:var(--lav);color:var(--lav);background:var(--lav-bg);}
+.lock-btn.locked{background:var(--lav-bg);border-color:var(--lav);color:var(--lav);}
+/* prompts */
+.prompt-item{padding:11px 13px;border-radius:12px;border:1px solid var(--border);
+  margin-bottom:8px;cursor:pointer;font-size:13px;color:var(--ink-2);
+  transition:all .2s;line-height:1.5;}
+.prompt-item:hover{background:var(--rose-bg);border-color:var(--rose);color:var(--rose-d);}
+/* gratitude */
+.grat-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:11px;
+  background:var(--sun-bg);margin-bottom:7px;font-size:13px;}
+.grat-item button{background:none;border:none;cursor:pointer;color:var(--ink-3);font-size:13px;
+  margin-left:auto;transition:color .2s;}
+.grat-item button:hover{color:#c44;}
+/* past entries */
+.entry-item{padding:14px;border-radius:14px;border:1px solid var(--border);margin-bottom:10px;
+  cursor:pointer;transition:all .2s;}
+.entry-item:hover{background:var(--lav-bg);}
+.entry-locked{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-3);font-style:italic;}
+
+/* ── WELLNESS ── */
+.wellness-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+/* breathing */
+.breath-ring{width:160px;height:160px;border-radius:50%;margin:0 auto 16px;
+  display:flex;align-items:center;justify-content:center;position:relative;
+  transition:all 1.2s ease;}
+.breath-inner{text-align:center;}
+.breath-num{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;color:var(--ink);}
+.breath-phase{font-size:12px;color:var(--ink-3);font-weight:700;letter-spacing:.8px;margin-top:2px;}
+@keyframes inhale{from{transform:scale(1);}to{transform:scale(1.18);}}
+@keyframes exhale{from{transform:scale(1.18);}to{transform:scale(1);}}
+.breath-btns{display:flex;gap:8px;justify-content:center;margin-top:14px;}
+/* water */
+.cups-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+.cup{width:36px;height:44px;border:2px solid var(--sky);border-radius:0 0 8px 8px;
+  cursor:pointer;transition:all .2s;background:white;display:flex;align-items:center;
+  justify-content:center;font-size:14px;}
+.cup.filled{background:linear-gradient(to top,var(--sky),var(--sky-bg));border-color:#7ab4d4;}
+.cup:hover:not(.filled){background:var(--sky-bg);}
+/* sleep */
+.sleep-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.sleep-stars{display:flex;gap:6px;}
+.sleep-star{font-size:22px;cursor:pointer;filter:grayscale(1) opacity(.4);transition:all .15s;}
+.sleep-star.lit{filter:none;}
+.dream-input{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:12px;
+  padding:11px 14px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--ink);
+  outline:none;resize:none;transition:border-color .2s;min-height:72px;line-height:1.7;}
+.dream-input:focus{border-color:var(--mint);}
+/* affirmation */
+.aff-box{background:linear-gradient(135deg,var(--peach-bg),var(--sun-bg));border-radius:16px;
+  padding:24px;text-align:center;margin-bottom:16px;}
+.aff-text{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;
+  line-height:1.65;color:var(--ink);}
+/* calendar */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-month{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;}
+.calbtn{background:none;border:none;cursor:pointer;color:var(--ink-3);font-size:17px;
+  padding:4px 8px;border-radius:8px;transition:all .2s;}
+.calbtn:hover{background:var(--rose-bg);color:var(--rose-d);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center;}
+.cal-hd{font-size:10px;font-weight:700;color:var(--ink-3);padding:3px 0;letter-spacing:.5px;}
+.cal-d{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;cursor:pointer;transition:all .2s;margin:0 auto;}
+.cal-d:hover:not(.empty):not(.today){background:var(--rose-bg);color:var(--rose-d);}
+.cal-d.today{background:linear-gradient(135deg,var(--rose),var(--lav));color:white;font-weight:700;}
+.cal-d.marked{background:var(--mint-bg);color:#2a7a5a;font-weight:600;}
+.cal-d.has-journal{box-shadow:inset 0 -3px 0 var(--rose-d);}
+.cal-d.has-wellness{outline:1.5px solid var(--mint);}
+.cal-d.has-both{background:var(--mint-bg);color:#2a7a5a;font-weight:700;}
+.cal-d.selected{box-shadow:0 0 0 2px var(--lav);}
+.cal-d.empty{cursor:default;color:transparent;}
+.cal-details{margin-top:18px;padding:16px;border-radius:16px;background:var(--cream);border:1px solid var(--border);}
+.cal-detail-date{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;margin-bottom:12px;}
+.cal-detail-section{padding:12px 0;border-top:1px solid var(--border);}
+.cal-detail-section h4{font-size:12px;letter-spacing:.5px;color:var(--ink-2);margin-bottom:7px;}
+.cal-detail-section p{font-size:13px;line-height:1.65;color:var(--ink-2);white-space:pre-wrap;overflow-wrap:anywhere;}
+.cal-empty{font-size:12px;color:var(--ink-3);font-style:italic;}
+
+/* ── SHARED BITS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:50px;
+  font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'Nunito',sans-serif;transition:all .3s;}
+.btn-rose{background:linear-gradient(135deg,var(--rose),var(--lav));color:white;
+  box-shadow:0 4px 18px rgba(210,130,160,.28);}
+.btn-rose:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(210,130,160,.38);}
+.btn-soft{background:white;color:var(--ink-2);border:1.5px solid var(--border);}
+.btn-soft:hover{border-color:var(--rose);color:var(--rose-d);background:var(--rose-bg);}
+.btn-mini{padding:7px 14px;font-size:12px;}
+.sel{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:12px;
+  padding:11px 14px;color:var(--ink);font-family:'Nunito',sans-serif;font-size:14px;
+  outline:none;cursor:pointer;}
+.sel:focus{border-color:var(--rose);}
+
+/* ── MODAL ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(50,36,50,.38);
+  backdrop-filter:blur(8px);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--cream);border:1px solid var(--border);border-radius:28px;
+  padding:36px;width:440px;max-width:100%;
+  box-shadow:0 24px 80px rgba(160,100,140,.22);}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;}
+.modal-x{background:none;border:none;cursor:pointer;color:var(--ink-3);font-size:20px;
+  border-radius:8px;padding:2px 6px;transition:all .2s;}
+.modal-x:hover{color:var(--rose-d);background:var(--rose-bg);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;right:28px;background:white;border:1px solid var(--border);
+  border-radius:18px;padding:14px 18px;box-shadow:0 12px 40px rgba(160,100,140,.18);
+  z-index:999;transform:translateX(120%);transition:transform .32s cubic-bezier(.175,.885,.32,1.275);
+  max-width:270px;display:flex;align-items:center;gap:12px;}
+.toast.show{transform:translateX(0);}
+.ti{font-size:22px;}
+.tt{font-weight:700;font-size:13px;color:var(--ink);}
+.tm{color:var(--ink-3);font-size:12px;margin-top:2px;}
+
+/* ── CONFIRM DELETE ── */
+.del-confirm{position:absolute;inset:0;background:rgba(253,249,244,.95);border-radius:24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  z-index:10;display:none;}
+.del-confirm.open{display:flex;}
+.del-msg{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;text-align:center;}
+.del-sub{font-size:13px;color:var(--ink-3);text-align:center;}
+.del-btns{display:flex;gap:10px;}
+
+/* ── SLEEP RESULT ── */
+.sleep-result{background:var(--mint-bg);border-radius:14px;padding:16px;text-align:center;}
+.sr-label{font-size:11px;font-weight:700;color:#3a7a5a;letter-spacing:.8px;margin-bottom:4px;}
+.sr-val{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;color:#2a5a3a;}
+.sr-note{font-size:12px;color:#5a8a6a;margin-top:3px;}
+
+/* LOCK OVERLAY */
+.lock-overlay{position:absolute;inset:0;background:rgba(253,249,244,.97);border-radius:24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:5;}
+.lock-icon{font-size:48px;}
+.lock-msg{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--ink);}
+.lock-sub{font-size:13px;color:var(--ink-3);}
+@media(max-width:760px){
+  .nav-in{height:auto;min-height:62px;padding:10px 16px;gap:10px;flex-wrap:wrap;}
+  .nav-tabs{order:3;width:100%;justify-content:center;}
+  .nt{flex:1;padding:7px 10px;}
+  .nav-right{margin-left:auto;}
+  .wrap{padding:0 16px;}
+  .page{padding-top:28px;}
+  .summary-grid,.goals-grid,.wellness-grid,.journal-grid{grid-template-columns:1fr;}
+  .jl-side{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .wellness-grid>.widget[style*="grid-column"]{grid-column:auto!important;}
+}
+@media(max-width:480px){
+  .ph{font-size:32px;}
+  .widget{padding:20px;}
+  .jl-side{grid-template-columns:1fr;}
+  .modal{padding:24px;}
+  .cal-d{width:34px;height:34px;}
+}
+</style>
 </head>
 <body>
 
@@ -16,7 +342,7 @@
 <div id="auth-screen">
   <div class="blobs" style="position:fixed"><div class="blob b1"></div><div class="blob b2"></div></div>
   <div class="auth-card">
-    <div class="auth-logo">bloom<span>.</span></div>
+    <div class="auth-logo">bloom<em>.</em></div>
     <div class="auth-tagline">your gentle daily companion 🌸</div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="setAuthMode('login')">Sign In</button>
@@ -69,6 +395,7 @@
         <div class="home-date" id="home-date"></div>
       </div>
       <div class="summary-grid">
+        <!-- Tasks summary -->
         <div class="sum-card" onclick="goPage('tasks',document.querySelectorAll('.nt')[1])">
           <div class="sum-card-accent" style="background:linear-gradient(90deg,var(--rose),var(--lav))"></div>
           <div class="sum-icon">🎯</div>
@@ -77,6 +404,7 @@
           <div class="sum-detail" id="sum-tasks-detail">2 goals in progress today</div>
           <div class="pbar-wrap"><div class="pbar" id="sum-tasks-bar" style="width:60%;background:linear-gradient(90deg,var(--rose),var(--lav))"></div></div>
         </div>
+        <!-- Journal summary -->
         <div class="sum-card" onclick="goPage('journal',document.querySelectorAll('.nt')[2])">
           <div class="sum-card-accent" style="background:linear-gradient(90deg,var(--lav),var(--sky))"></div>
           <div class="sum-icon">📖</div>
@@ -85,6 +413,7 @@
           <div class="sum-detail" id="sum-journal-detail">Tap to open your journal</div>
           <div class="pbar-wrap"><div class="pbar" id="sum-journal-bar" style="width:0%;background:linear-gradient(90deg,var(--lav),var(--sky))"></div></div>
         </div>
+        <!-- Wellness summary -->
         <div class="sum-card" onclick="goPage('wellness',document.querySelectorAll('.nt')[3])">
           <div class="sum-card-accent" style="background:linear-gradient(90deg,var(--mint),var(--sky))"></div>
           <div class="sum-icon">🌿</div>
@@ -116,9 +445,13 @@
   <!-- ══ JOURNAL ══ -->
   <div class="page" id="page-journal">
     <div class="wrap">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:24px">
         <div class="ph">My <em>Journal</em></div>
-        <div style="font-size:13px;color:var(--ink-3)" id="j-autosave">Ready to write</div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <label for="j-date" style="font-size:12px;color:var(--ink-3);font-weight:700">Entry date</label>
+          <input class="fi" type="date" id="j-date" onchange="selectDate(this.value)" style="width:auto">
+          <div style="font-size:13px;color:var(--ink-3)" id="j-autosave">Ready to write</div>
+        </div>
       </div>
       <div class="journal-grid">
         <div class="jl-main">
@@ -149,26 +482,6 @@
                 </div>
                 <div style="font-size:12px;color:var(--ink-3)">Entry password: <b id="j-pass-hint" style="color:var(--rose-d)">not set</b></div>
               </div>
-            </div>
-          </div>
-
-          <!-- Image upload -->
-          <div class="widget" id="w-images">
-            <div class="widget-head">
-              <div class="widget-title">🖼️ Images</div>
-              <div class="widget-controls">
-                <button class="wc-btn" onclick="toggleWidget('w-images')">Hide</button>
-                <button class="wc-btn del" onclick="confirmDelete('w-images','Images')">Remove</button>
-              </div>
-            </div>
-            <div class="widget-body">
-              <label class="img-drop" id="img-drop-area">
-                <input type="file" id="img-input" accept="image/*" multiple onchange="handleImages(event)">
-                <div style="font-size:28px;margin-bottom:6px">📷</div>
-                <div style="font-weight:700;font-size:14px;color:var(--ink-2)">Drop images or click to upload</div>
-                <div style="font-size:12px;color:var(--ink-3);margin-top:4px">Add photos to your entry</div>
-              </label>
-              <div class="img-preview" id="img-preview"></div>
             </div>
           </div>
 
@@ -226,8 +539,7 @@
             <div class="widget-body">
               <div id="grat-list"></div>
               <div style="display:flex;gap:8px;margin-top:10px">
-                <input class="fi" id="grat-input" placeholder="I'm grateful for…"
-                  style="font-size:13px;padding:9px 13px"
+                <input class="fi" id="grat-input" placeholder="I'm grateful for…" style="font-size:13px;padding:9px 13px"
                   onkeydown="if(event.key==='Enter')addGrat()">
                 <button class="btn btn-rose btn-mini" onclick="addGrat()">Add</button>
               </div>
@@ -245,6 +557,8 @@
         <div class="ph">Well<em>ness</em></div>
         <div style="font-size:13px;color:var(--ink-3);margin-top:4px">Small rituals, lasting change.</div>
       </div>
+
+      <!-- Row 1: Calendar + Breathing -->
       <div class="wellness-grid">
 
         <!-- Calendar -->
@@ -263,7 +577,8 @@
               <button class="calbtn" onclick="calMove(1)">›</button>
             </div>
             <div class="cal-grid" id="cal-grid"></div>
-            <div style="font-size:12px;color:var(--ink-3);margin-top:12px">🟢 = marked day · click to toggle</div>
+            <div style="font-size:11px;color:var(--ink-3);margin-top:10px">Rose underline: journal · green outline: wellness · select a date to review</div>
+            <div class="cal-details" id="calendar-day-details" aria-live="polite"></div>
           </div>
         </div>
 
@@ -279,7 +594,7 @@
           <div class="widget-body" style="text-align:center">
             <div style="font-size:12px;color:var(--ink-3);margin-bottom:14px">4-4-6 method · Inhale 4 · Hold 4 · Exhale 6</div>
             <div class="breath-ring" id="breath-ring"
-              style="background:conic-gradient(var(--lav-bg) 0%,var(--lav-bg) 100%);box-shadow:0 0 0 8px var(--lav-bg)">
+              style="background:conic-gradient(var(--lav-bg) 0%, var(--lav-bg) 100%);box-shadow:0 0 0 8px var(--lav-bg)">
               <div class="breath-inner">
                 <div class="breath-num" id="breath-num">4</div>
                 <div class="breath-phase" id="breath-phase">Tap to begin</div>
@@ -303,7 +618,7 @@
             </div>
           </div>
           <div class="widget-body" style="text-align:center">
-            <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:600;color:var(--sky)" id="water-num">0</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:600;color:var(--sky);" id="water-num">0</div>
             <div style="font-size:13px;color:var(--ink-3);margin-bottom:4px">glasses today · goal: <b>8</b></div>
             <div class="cups-row" id="cups-row"></div>
             <button class="btn btn-soft btn-mini" style="margin-top:14px" onclick="resetWater()">Reset</button>
@@ -342,7 +657,7 @@
           </div>
         </div>
 
-        <!-- Affirmation -->
+        <!-- Affirmation (full width) -->
         <div class="widget" id="w-aff" style="grid-column:1/-1">
           <div class="widget-head">
             <div class="widget-title">✨ Daily Affirmation</div>
@@ -379,10 +694,994 @@
   <div><div class="tt" id="t-title"></div><div class="tm" id="t-msg"></div></div>
 </div>
 
-<<<<<<< HEAD
-=======
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
->>>>>>> 8f92ca0 (Clean project)
-<script src="bloom.js"></script>
+<script>
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let users = JSON.parse(localStorage.getItem('bloom_users')||'{}');
+let currentUser = null;
+let state = {};
+
+function localDateKey(date=new Date()){
+  const year=date.getFullYear();
+  const month=String(date.getMonth()+1).padStart(2,'0');
+  const day=String(date.getDate()).padStart(2,'0');
+  return `${year}-${month}-${day}`;
+}
+
+function dateFromKey(key){
+  const [year,month,day]=key.split('-').map(Number);
+  return new Date(year,month-1,day);
+}
+
+function formatDateKey(key){
+  return dateFromKey(key).toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+
+function ensureDayRecord(key=state.selectedDate){
+  if(!state.dailyData[key]) state.dailyData[key]={};
+  return state.dailyData[key];
+}
+
+const defaultState = () => ({
+  goals: [
+    {emoji:'🏃',title:'Run 5K',desc:'Train for a 5km run by next month.',color:'#f0b8c4',prog:62,completed:false},
+    {emoji:'📚',title:'Read 24 Books',desc:'Two books a month all year.',color:'#c8b8e6',prog:33,completed:false},
+    {emoji:'🌿',title:'Daily Meditation',desc:'Ten minutes every morning.',color:'#a6d8c4',prog:78,completed:false},
+    {emoji:'💰',title:'Save £3,000',desc:'Emergency fund by December.',color:'#f5c49c',prog:45,completed:false},
+    {emoji:'✍️',title:'Journal Daily',desc:'Write at least a few lines each day.',color:'#a4cee6',prog:90,completed:false},
+  ],
+  waterCount:0,
+  sleepRating:0,
+  dayRating:0,
+  gratList:['Warm morning light','Good health','Kindness of friends'],
+  pastEntries:[],
+  markedDays: new Set(),
+  dailyData:{},
+  selectedDate:localDateKey(),
+  jText:'',
+  jLocked:false,
+  jPass:'',
+  breathCycles:0,
+  affIdx:0,
+  quoteIdx:0,
+  sleepBed:'22:30',
+  sleepWake:'06:45',
+  dreamNotes:'',
+  sleepRatingVal:0,
+  hiddenWidgets: new Set(),
+  deletedWidgets: new Set(),
+});
+
+function saveState(){
+  if(!currentUser) return;
+  const s = {...state};
+  s.markedDays = [...s.markedDays];
+  s.hiddenWidgets = [...s.hiddenWidgets];
+  s.deletedWidgets = [...s.deletedWidgets];
+  users[currentUser].state = s;
+  localStorage.setItem('bloom_users', JSON.stringify(users));
+}
+
+function loadState(){
+  const raw = users[currentUser]?.state;
+  state = {...defaultState(), ...(raw||{})};
+  state.goals=(state.goals||[]).map(goal=>({
+    ...goal,
+    completed:typeof goal.completed==='boolean'?goal.completed:goal.prog>=100
+  }));
+  state.dailyData=raw?.dailyData&&typeof raw.dailyData==='object'?raw.dailyData:{};
+  const savedDate=raw?.selectedDate;
+  state.selectedDate=/^\d{4}-\d{2}-\d{2}$/.test(savedDate||'')&&localDateKey(dateFromKey(savedDate))===savedDate
+    ?savedDate:localDateKey();
+  state.markedDays = new Set(raw?.markedDays||[]);
+  state.hiddenWidgets = new Set(raw?.hiddenWidgets||[]);
+  state.deletedWidgets = new Set(raw?.deletedWidgets||[]);
+
+  const today=localDateKey();
+  const todayRecord=ensureDayRecord(today);
+  if(raw?.jText&&!todayRecord.journal) todayRecord.journal={text:raw.jText,locked:!!raw.jLocked};
+  if(raw?.dayRating&&!todayRecord.dayRating) todayRecord.dayRating=raw.dayRating;
+  if(!todayRecord.wellness){
+    const wellness={};
+    if(raw?.breathCycles) wellness.breathing={cycles:raw.breathCycles,goal:3};
+    if(raw?.waterCount) wellness.water={glasses:raw.waterCount,goal:8};
+    if(raw&&(raw.sleepRatingVal||raw.dreamNotes||
+      (raw.sleepBed&&raw.sleepBed!=='22:30')||(raw.sleepWake&&raw.sleepWake!=='06:45'))){
+      wellness.sleep={bed:raw.sleepBed||'22:30',wake:raw.sleepWake||'06:45',
+        rating:raw.sleepRatingVal||0,notes:raw.dreamNotes||''};
+    }
+    if(Object.keys(wellness).length) todayRecord.wellness=wellness;
+  }
+
+  state.pastEntries=(state.pastEntries||[]).filter(entry=>{
+    let date;
+    if(entry.date==='Yesterday'||entry.date==='Two days ago'){
+      date=new Date();
+      date.setDate(date.getDate()-(entry.date==='Yesterday'?1:2));
+    }else{
+      const match=entry.date?.match(/^(\d{1,2}) ([A-Za-z]+)$/);
+      date=match?new Date(`${match[2]} ${match[1]}, ${new Date().getFullYear()}`):null;
+      if(date&&!Number.isNaN(date.getTime())&&date>new Date()) date.setFullYear(date.getFullYear()-1);
+    }
+    if(!date||Number.isNaN(date.getTime())) return true;
+    const key=localDateKey(date);
+    const record=ensureDayRecord(key);
+    if(!record.journal) record.journal={text:entry.preview||'',locked:!!entry.locked};
+    return false;
+  });
+}
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+function setAuthMode(m){
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',(m==='login'&&i===0)||(m==='signup'&&i===1)));
+  document.getElementById('login-form').style.display = m==='login'?'':'none';
+  document.getElementById('signup-form').style.display = m==='signup'?'':'none';
+  document.getElementById('auth-error').style.display='none';
+}
+
+function authErr(msg){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.display='block'; }
+
+function doSignup(){
+  const name=document.getElementById('s-name').value.trim();
+  const email=document.getElementById('s-email').value.trim().toLowerCase();
+  const pass=document.getElementById('s-pass').value;
+  if(!name||!email||!pass){ authErr('Please fill in all fields.'); return; }
+  if(pass.length<6){ authErr('Password must be at least 6 characters.'); return; }
+  if(users[email]){ authErr('An account with that email already exists.'); return; }
+  users[email]={name,pass,state:null};
+  localStorage.setItem('bloom_users',JSON.stringify(users));
+  launchApp(email);
+}
+
+function doLogin(){
+  const email=document.getElementById('l-email').value.trim().toLowerCase();
+  const pass=document.getElementById('l-pass').value;
+  if(!users[email]||users[email].pass!==pass){ authErr('Incorrect email or password.'); return; }
+  launchApp(email);
+}
+
+function launchApp(email){
+  currentUser=email;
+  loadState();
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+
+function doLogout(){
+  saveState();
+  currentUser=null;
+  state={};
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  setAuthMode('login');
+}
+
+// ═══════════════════════════════════════
+// APP INIT
+// ═══════════════════════════════════════
+function initApp(){
+  const name = users[currentUser]?.name || 'friend';
+  document.getElementById('greet-name').textContent = name;
+  const h = new Date().getHours();
+  document.getElementById('greet-time').textContent = h<12?'morning':h<17?'afternoon':'evening';
+  document.getElementById('home-date').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  buildGoals();
+  buildJournal();
+  buildWellness();
+  updateSummary();
+  applyWidgetStates();
+}
+
+// ═══════════════════════════════════════
+// PAGE NAV
+// ═══════════════════════════════════════
+function goPage(name, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nt').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else document.querySelectorAll('.nt')[['home','tasks','journal','wellness'].indexOf(name)].classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// WIDGET HIDE / DELETE
+// ═══════════════════════════════════════
+function toggleWidget(id){
+  const el = document.getElementById(id);
+  const hidden = el.classList.toggle('collapsed');
+  if(hidden) state.hiddenWidgets.add(id); else state.hiddenWidgets.delete(id);
+  el.querySelector('.wc-btn:not(.del)').textContent = hidden ? 'Show' : 'Hide';
+  saveState();
+}
+
+function confirmDelete(id, label){
+  openModal('Remove widget',`
+    <div style="text-align:center">
+      <div style="font-size:36px;margin-bottom:12px">🗑️</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:8px">Remove "${label}"?</div>
+      <div style="font-size:13px;color:var(--ink-3);margin-bottom:24px">You can restore it by visiting Settings (coming soon).</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-soft" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-rose" onclick="deleteWidget('${id}');closeModal()">Remove</button>
+      </div>
+    </div>
+  `);
+}
+
+function deleteWidget(id){
+  const el = document.getElementById(id);
+  if(el){ el.style.display='none'; }
+  state.deletedWidgets.add(id);
+  saveState();
+  toast('🗑️','Widget removed','You can restore it anytime.');
+}
+
+function applyWidgetStates(){
+  state.deletedWidgets.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display='none';
+  });
+  state.hiddenWidgets.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      el.classList.add('collapsed');
+      const btn=el.querySelector('.wc-btn:not(.del)');
+      if(btn) btn.textContent='Show';
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// HOME SUMMARY
+// ═══════════════════════════════════════
+const quotes=[
+  {t:'Bloom where you are planted.',b:'Saint Francis de Sales'},
+  {t:'She believed she could, so she did.',b:'R.S. Grey'},
+  {t:'You are enough, a thousand times enough.',b:'Atticus'},
+  {t:'Be gentle with yourself.',b:'Max Ehrmann'},
+  {t:'Small steps are still steps forward.',b:'Unknown'},
+  {t:'The way you speak to yourself matters most.',b:'Unknown'},
+  {t:'Rest is not a reward. It is a necessity.',b:'Unknown'},
+];
+
+function nextQuote(){
+  state.quoteIdx=(state.quoteIdx+1)%quotes.length;
+  const q=quotes[state.quoteIdx];
+  document.getElementById('hq-text').textContent=`"${q.t}"`;
+  document.getElementById('hq-by').textContent=`— ${q.b}`;
+  saveState();
+}
+
+function updateSummary(){
+  // Tasks
+  const total=state.goals.length;
+  const done=state.goals.filter(g=>g.completed).length;
+  document.getElementById('sum-tasks-title').textContent=`${done} of ${total} complete`;
+  document.getElementById('sum-tasks-detail').textContent=`${total-done} goal${total-done!==1?'s':''} still in progress`;
+  document.getElementById('sum-tasks-bar').style.width=`${total?done/total*100:0}%`;
+  // Journal
+  const todayRecord=state.dailyData?.[localDateKey()]||{};
+  const todaysText=todayRecord.journal?.text||'';
+  const hasText = todaysText.trim().length>0;
+  const hasRating = !!todayRecord.dayRating;
+  const hasJournalData = hasText||hasRating;
+  document.getElementById('sum-journal-title').textContent = hasText ? 'Written today ✓' : hasRating ? 'Day rated ✓' : 'Not written yet';
+  document.getElementById('sum-journal-detail').textContent = [
+    hasText?`${todaysText.length} characters written`:null,
+    hasRating?'Day rated':null
+  ].filter(Boolean).join(' · ')||'Tap to open your journal';
+  document.getElementById('sum-journal-bar').style.width = hasJournalData ? '100%' : '0%';
+  // Wellness
+  const todaysWellness=todayRecord.wellness||{};
+  const wc=todaysWellness.water?.glasses||0;
+  const wellnessDetails=[
+    wc>=8?'Hydration goal met':`${wc}/8 cups`,
+    todaysWellness.sleep?(todaysWellness.sleep.rating?`Sleep rated ${todaysWellness.sleep.rating}/5`:'Sleep logged'):null,
+    todaysWellness.breathing?.cycles?`${todaysWellness.breathing.cycles} breathing cycle${todaysWellness.breathing.cycles===1?'':'s'}`:null
+  ].filter(Boolean);
+  document.getElementById('sum-well-title').textContent=`${wc} / 8 cups`;
+  document.getElementById('sum-well-detail').textContent=wellnessDetails.join(' · ')||'Hydration · Sleep · Breathing';
+  document.getElementById('sum-well-bar').style.width=`${wc/8*100}%`;
+  // Quote
+  const q=quotes[state.quoteIdx||0];
+  document.getElementById('hq-text').textContent=`"${q.t}"`;
+  document.getElementById('hq-by').textContent=`— ${q.b}`;
+}
+
+// ═══════════════════════════════════════
+// GOALS / TASKS
+// ═══════════════════════════════════════
+const goalColors=['#f0b8c4','#c8b8e6','#a6d8c4','#f5c49c','#a4cee6','#f5dfa0'];
+
+function buildGoals(){
+  const g=document.getElementById('goals-grid');
+  g.innerHTML=state.goals.map((gl,i)=>`
+    <div class="goal-card ${gl.completed?'completed':''}">
+      <div class="gc-top" style="background:${gl.color}"></div>
+      <div class="goal-actions">
+        <label class="goal-check" onclick="event.stopPropagation()">
+          <input type="checkbox" ${gl.completed?'checked':''} aria-label="Mark ${gl.title} as ${gl.completed?'incomplete':'complete'}" onchange="toggleGoalComplete(${i})">
+          ${gl.completed?'Completed':'Complete'}
+        </label>
+        <button class="wc-btn del" style="font-size:10px;padding:4px 8px" onclick="event.stopPropagation();removeGoal(${i})">✕ Remove</button>
+      </div>
+      <div class="gc-emoji">${gl.emoji}</div>
+      <div class="gc-title">${gl.title}</div>
+      <div class="gc-desc">${gl.desc}</div>
+    </div>
+  `).join('')+`<div class="goal-card add-goal-card" onclick="openAddGoal()">
+    <div style="font-size:32px">+</div><div>Add new goal</div></div>`;
+  updateSummary();
+}
+
+function toggleGoalComplete(i){
+  const goal=state.goals[i];
+  goal.completed=!goal.completed;
+  buildGoals();
+  saveState();
+  toast(goal.completed?'✅':'↩️',goal.completed?'Task completed':'Task reopened',goal.title);
+}
+
+function removeGoal(i){
+  openModal('Remove goal',`
+    <div style="text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">${state.goals[i].emoji}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;margin-bottom:20px">Remove "${state.goals[i].title}"?</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-soft" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-rose" onclick="doRemoveGoal(${i});closeModal()">Remove</button>
+      </div>
+    </div>
+  `);
+}
+
+function doRemoveGoal(i){ state.goals.splice(i,1); buildGoals(); saveState(); toast('🗑️','Goal removed',''); }
+
+function openAddGoal(){
+  const emojis=['🏃','📚','🌿','💰','✍️','🎨','🧘','💪','🎵','✈️','🍎','🧠','🎯','🌸','💻'];
+  let chosenEmoji='🌟';
+  openModal('Add a goal',`
+    <div class="fl"><label>Goal title</label><input class="fi" id="ng-title" placeholder="e.g. Learn Spanish"></div>
+    <div class="fl"><label>Description</label><input class="fi" id="ng-desc" placeholder="Describe your goal…"></div>
+    <div class="fl"><label>Choose an emoji</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px" id="ep">
+        ${emojis.map(e=>`<span onclick="pickE('${e}',this)" style="font-size:22px;cursor:pointer;padding:6px;border-radius:8px;transition:all .2s">${e}</span>`).join('')}
+      </div>
+    </div>
+    <button class="auth-btn" style="margin-top:4px" onclick="saveGoal()">Add Goal 🌟</button>
+  `);
+  window._pickE=(emoji,el)=>{ chosenEmoji=emoji; document.querySelectorAll('#ep span').forEach(s=>s.style.background=''); el.style.background='var(--rose-bg)'; };
+  window._chosenEmoji=()=>chosenEmoji;
+}
+
+window.pickE=(e,el)=>window._pickE&&window._pickE(e,el);
+
+function saveGoal(){
+  const title=document.getElementById('ng-title').value.trim();
+  const desc=document.getElementById('ng-desc').value.trim()||'My new goal.';
+  if(!title){ toast('⚠️','','Please enter a title.'); return; }
+  state.goals.push({emoji:window._chosenEmoji?window._chosenEmoji():'🌟',title,desc,color:goalColors[state.goals.length%goalColors.length],prog:0,completed:false});
+  buildGoals(); closeModal(); saveState();
+  toast('🌟','Goal added!',`"${title}" is now on your board.`);
+}
+
+// ═══════════════════════════════════════
+// JOURNAL
+// ═══════════════════════════════════════
+const prompts=[
+  'What made you smile today? 😊',
+  'Describe a moment of quiet peace recently.',
+  'What would you tell your past self?',
+  'Three things you\'re proud of this week.',
+  'How do you want to feel tomorrow?',
+  'What would you like to release?',
+  'Who inspired you lately and why?',
+  'Describe your ideal day in detail.',
+];
+const ratingLabels=['','Rough 😞','Hard 😕','Okay 😐','Good 😊','Amazing 🌟'];
+
+function buildJournal(){
+  loadJournalForSelectedDate();
+  // lock
+  updateLockUI();
+  // prompts
+  const pb=document.getElementById('prompts-body');
+  if(pb) pb.innerHTML=prompts.map(p=>`<div class="prompt-item" onclick="usePrompt('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('');
+  // stars
+  buildStars();
+  // gratitude
+  buildGrat();
+  // past entries
+  buildPastEntries();
+}
+
+let jSaveTimeout;
+function jAutoSave(){
+  const key=state.selectedDate;
+  const text=document.getElementById('j-text').value;
+  state.jText=text;
+  document.getElementById('j-autosave').textContent='Unsaved…';
+  clearTimeout(jSaveTimeout);
+  jSaveTimeout=setTimeout(()=>{
+    saveJournalForDate(key,text);
+    document.getElementById('j-autosave').textContent='✓ Auto-saved';
+  },800);
+}
+
+function loadJournalForSelectedDate(){
+  const key=state.selectedDate||localDateKey();
+  const record=state.dailyData?.[key]||{};
+  const jt=document.getElementById('j-text');
+  if(jt) jt.value=record.journal?.text||'';
+  state.jText=record.journal?.text||'';
+  state.jLocked=!!record.journal?.locked;
+  const dateInput=document.getElementById('j-date');
+  if(dateInput) dateInput.value=key;
+  buildStars();
+}
+
+function saveJournalForDate(key,text){
+  const record=ensureDayRecord(key);
+  if(text.trim()){
+    record.journal={...(record.journal||{}),text,locked:!!state.jLocked};
+  }else if(record.journal){
+    delete record.journal;
+  }
+  if(!record.dayRating&&!record.journal&&!record.wellness) delete state.dailyData[key];
+  saveState();
+  buildPastEntries();
+  updateSummary();
+  buildCal();
+  renderCalendarDetails();
+}
+
+function selectDate(key){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||localDateKey(dateFromKey(key))!==key) return;
+  if(breathRunning) toggleBreath();
+  if(jSaveTimeout){
+    clearTimeout(jSaveTimeout);
+    saveJournalForDate(state.selectedDate,document.getElementById('j-text')?.value||'');
+    jSaveTimeout=null;
+  }
+  state.selectedDate=key;
+  const selectedDate=dateFromKey(key);
+  calY=selectedDate.getFullYear();
+  calM=selectedDate.getMonth();
+  loadJournalForSelectedDate();
+  updateLockUI();
+  loadWellnessForSelectedDate();
+  buildCal();
+  renderCalendarDetails();
+  saveState();
+}
+
+function buildStars(){
+  const sr=document.getElementById('star-row');
+  if(!sr) return;
+  const rating=state.dailyData?.[state.selectedDate]?.dayRating||0;
+  sr.innerHTML=[1,2,3,4,5].map(n=>`
+    <span class="star ${n<=rating?'lit':''}" role="button" tabindex="0" aria-label="Rate day ${n} out of 5" onclick="setRating(${n})">⭐</span>
+  `).join('');
+  document.getElementById('rating-label').textContent = rating ? ratingLabels[rating] : 'Tap a star to rate';
+}
+
+function setRating(n){
+  const record=ensureDayRecord(state.selectedDate);
+  record.dayRating=n;
+  state.dayRating=n;
+  buildStars();
+  saveState();
+  buildCal();
+  renderCalendarDetails();
+  toast('⭐',ratingLabels[n],'Day rated!');
+}
+
+function usePrompt(p){
+  const el=document.getElementById('j-text');
+  if(!el) return;
+  el.value=p+'\n\n'; el.focus();
+  state.jText=el.value; jAutoSave();
+  toast('💡','Prompt added','Start writing your response…');
+}
+
+function saveEntry(){
+  const text=document.getElementById('j-text').value||'';
+  if(!text.trim()){ toast('⚠️','','Nothing to save yet.'); return; }
+  clearTimeout(jSaveTimeout);
+  saveJournalForDate(state.selectedDate,text);
+  document.getElementById('j-autosave').textContent='Entry saved ✓';
+  toast('💾','Entry saved!',`Saved for ${formatDateKey(state.selectedDate)}. 💕`);
+}
+
+function buildPastEntries(){
+  const b=document.getElementById('past-entries-body');
+  if(!b) return;
+  const entries=Object.entries(state.dailyData||{})
+    .filter(([,record])=>record.journal?.text)
+    .sort(([a],[b])=>b.localeCompare(a))
+    .slice(0,10);
+  if(!entries.length&&!state.pastEntries.length){ b.innerHTML='<div style="font-size:13px;color:var(--ink-3);font-style:italic">No past entries yet.</div>'; return; }
+  b.innerHTML=entries.map(([key,record])=>`
+    <div class="entry-item" onclick="openSavedEntry('${key}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+        <span style="font-size:12px;font-weight:700;color:var(--ink-3)">${formatDateKey(key)}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span>📖</span>
+          ${record.journal.locked?'<span title="Locked">🔒</span>':''}
+        </div>
+      </div>
+      ${record.journal.locked?'<div class="entry-locked">🔒 Locked entry — click to unlock</div>':`<div style="font-size:13px;color:var(--ink-2);font-style:italic">${escapeHtml(record.journal.text.slice(0,70))}</div>`}
+    </div>
+  `).join('')+state.pastEntries.map((e,i)=>`
+    <div class="entry-item" onclick="openEntry(${i})">
+      <div style="font-size:12px;font-weight:700;color:var(--ink-3);margin-bottom:5px">${escapeHtml(e.date)}</div>
+      <div style="font-size:13px;color:var(--ink-2);font-style:italic">${escapeHtml(e.preview)}</div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(text){
+  return String(text).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+
+function openSavedEntry(key){
+  const entry=state.dailyData[key]?.journal;
+  if(!entry) return;
+  if(entry.locked){
+    openModal('Unlock entry',`
+      <div style="text-align:center">
+        <div style="font-size:14px;color:var(--ink-2);margin-bottom:16px">Enter your journal password to read this entry.</div>
+        <input class="fi" type="password" id="saved-entry-pass" placeholder="Password…" style="text-align:center;margin-bottom:12px">
+        <button class="auth-btn" onclick="unlockSavedEntry('${key}')">Unlock</button>
+      </div>
+    `);
+    return;
+  }
+  openModal(formatDateKey(key),'<div id="saved-entry-text" style="font-size:14px;line-height:1.8;color:var(--ink-2);white-space:pre-wrap"></div>');
+  document.getElementById('saved-entry-text').textContent=entry.text;
+}
+
+function unlockSavedEntry(key){
+  const input=document.getElementById('saved-entry-pass');
+  if(input.value!==state.jPass&&state.jPass!==''){
+    input.value='';
+    input.placeholder='Wrong password, try again';
+    return;
+  }
+  const entry=state.dailyData[key]?.journal;
+  if(entry) entry.locked=false;
+  closeModal();
+  saveState();
+  openSavedEntry(key);
+}
+
+function openEntry(i){
+  const e=state.pastEntries[i];
+  if(e.locked){
+    openModal('Unlock entry',`
+      <div style="text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">🔒</div>
+        <div style="font-size:14px;color:var(--ink-2);margin-bottom:16px">Enter your journal password to read this entry.</div>
+        <input class="fi" type="password" id="entry-pass-input" placeholder="Password…" style="text-align:center;margin-bottom:12px">
+        <button class="auth-btn" onclick="unlockEntryModal(${i})">Unlock</button>
+      </div>
+    `);
+  } else {
+    openModal(e.date,`<div style="font-size:14px;line-height:1.8;color:var(--ink-2)">${e.preview}</div>`);
+  }
+}
+
+function unlockEntryModal(i){
+  const inp=document.getElementById('entry-pass-input');
+  if(inp.value===state.jPass||state.jPass===''){
+    closeModal();
+    setTimeout(()=>{ openModal(state.pastEntries[i].date,`<div style="font-size:14px;line-height:1.8;color:var(--ink-2)">${state.pastEntries[i].preview}</div>`); },200);
+  } else { inp.style.borderColor='var(--rose-d)'; inp.value=''; inp.placeholder='Wrong password, try again'; }
+}
+
+function deleteEntry(i){ state.pastEntries.splice(i,1); buildPastEntries(); saveState(); toast('🗑️','Entry deleted',''); }
+
+// Lock
+let lockSetMode=false;
+function toggleLock(){
+  if(!state.jPass){
+    // set a password first
+    openModal('Set journal password',`
+      <div style="font-size:14px;color:var(--ink-2);margin-bottom:16px">Choose a password to lock entries. Remember it — there's no recovery!</div>
+      <input class="fi" type="password" id="new-jpass" placeholder="New password…" style="margin-bottom:10px">
+      <input class="fi" type="password" id="new-jpass2" placeholder="Confirm password…" style="margin-bottom:16px">
+      <button class="auth-btn" onclick="setJournalPass()">Set Password</button>
+    `);
+    return;
+  }
+  state.jLocked=!state.jLocked;
+  const entry=state.dailyData?.[state.selectedDate]?.journal;
+  if(entry) entry.locked=state.jLocked;
+  updateLockUI(); saveState();
+  toast(state.jLocked?'🔒':'🔓', state.jLocked?'Entry locked':'Entry unlocked','');
+}
+
+function setJournalPass(){
+  const p1=document.getElementById('new-jpass').value;
+  const p2=document.getElementById('new-jpass2').value;
+  if(!p1||p1!==p2){ toast('⚠️','Passwords don\'t match','Try again.'); return; }
+  state.jPass=p1; state.jLocked=true;
+  closeModal(); updateLockUI(); saveState();
+  toast('🔒','Password set','Your journal is now lockable.');
+}
+
+function updateLockUI(){
+  const btn=document.getElementById('lock-toggle-btn');
+  const headerBtn=document.getElementById('lock-btn');
+  const hint=document.getElementById('j-pass-hint');
+  const overlay=document.getElementById('j-lock-overlay');
+  if(btn) btn.textContent=state.jLocked?'🔒 Locked':'🔓 Lock Entry';
+  if(headerBtn) headerBtn.textContent=state.jLocked?'🔒 Unlock':'🔓 Lock';
+  if(hint) hint.textContent=state.jPass?'set (hidden)':'not set';
+  if(overlay) overlay.style.display=state.jLocked?'flex':'none';
+}
+
+function tryUnlock(){
+  const inp=document.getElementById('unlock-input');
+  if(inp.value===state.jPass||state.jPass===''){
+    state.jLocked=false;
+    const entry=state.dailyData?.[state.selectedDate]?.journal;
+    if(entry) entry.locked=false;
+    updateLockUI(); saveState(); inp.value='';
+    toast('🔓','Unlocked','');
+  } else { inp.value=''; inp.placeholder='Wrong password'; }
+}
+
+// Gratitude
+function buildGrat(){
+  const gl=document.getElementById('grat-list');
+  if(!gl) return;
+  gl.innerHTML=state.gratList.map((g,i)=>`
+    <div class="grat-item">🙏 <span style="flex:1">${g}</span>
+      <button onclick="removeGrat(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addGrat(){
+  const inp=document.getElementById('grat-input');
+  const v=(inp.value||'').trim();
+  if(!v) return;
+  state.gratList.push(v); inp.value='';
+  buildGrat(); saveState();
+  toast('🙏','Added!',`"${v}"`);
+}
+
+function removeGrat(i){ state.gratList.splice(i,1); buildGrat(); saveState(); }
+
+// ═══════════════════════════════════════
+// WELLNESS
+// ═══════════════════════════════════════
+function loadWellnessForSelectedDate(){
+  const wellness=state.dailyData?.[state.selectedDate]?.wellness||{};
+  state.breathCycles=wellness.breathing?.cycles||0;
+  state.waterCount=wellness.water?.glasses||0;
+  state.sleepBed=wellness.sleep?.bed||'22:30';
+  state.sleepWake=wellness.sleep?.wake||'06:45';
+  state.sleepRatingVal=wellness.sleep?.rating||0;
+  state.dreamNotes=wellness.sleep?.notes||'';
+  const bed=document.getElementById('s-bed');
+  const wake=document.getElementById('s-wake');
+  const notes=document.getElementById('dream-input');
+  if(bed) bed.value=state.sleepBed;
+  if(wake) wake.value=state.sleepWake;
+  if(notes) notes.value=state.dreamNotes;
+  const cycles=document.getElementById('breath-cycles');
+  if(cycles) cycles.textContent=state.breathCycles;
+  const water=document.getElementById('water-num');
+  if(water) water.textContent=state.waterCount;
+  buildCups();
+  buildSleepStars();
+  calcSleep();
+  buildCal();
+}
+
+function buildWellness(){
+  const selectedDate=dateFromKey(state.selectedDate);
+  calY=selectedDate.getFullYear();
+  calM=selectedDate.getMonth();
+  loadWellnessForSelectedDate();
+  updateAff();
+}
+
+// Calendar
+let calY=new Date().getFullYear(), calM=new Date().getMonth();
+
+function buildCal(){
+  const mns=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const lbl=document.getElementById('cal-month-label');
+  if(lbl) lbl.textContent=`${mns[calM]} ${calY}`;
+  const grd=document.getElementById('cal-grid');
+  if(!grd) return;
+  const first=new Date(calY,calM,1).getDay();
+  const days=new Date(calY,calM+1,0).getDate();
+  const todayKey=localDateKey();
+  let html=['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cal-hd">${d}</div>`).join('');
+  for(let i=0;i<first;i++) html+=`<div class="cal-d empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const key=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const record=state.dailyData?.[key]||{};
+    const hasJournal=!!(record.journal?.text||record.dayRating);
+    const wellness=record.wellness||{};
+    const hasWellness=!!(wellness.breathing||wellness.sleep||wellness.water);
+    const classes=[
+      key===todayKey?'today':'',
+      hasJournal&&hasWellness?'has-both':'',
+      hasJournal&&!hasWellness?'has-journal':'',
+      hasWellness&&!hasJournal?'has-wellness':'',
+      key===state.selectedDate?'selected':''
+    ].filter(Boolean).join(' ');
+    html+=`<div class="cal-d ${classes}" role="button" tabindex="0" aria-label="${formatDateKey(key)}${hasJournal?' journal data':''}${hasWellness?' wellness data':''}"
+      onclick="selectCalendarDate('${key}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectCalendarDate('${key}')}">${d}</div>`;
+  }
+  grd.innerHTML=html;
+  renderCalendarDetails();
+}
+
+function calMove(d){ calM+=d; if(calM>11){calM=0;calY++;} if(calM<0){calM=11;calY--;} buildCal(); }
+
+function selectCalendarDate(key){
+  const date=dateFromKey(key);
+  calY=date.getFullYear();
+  calM=date.getMonth();
+  selectDate(key);
+}
+
+function renderCalendarDetails(){
+  const container=document.getElementById('calendar-day-details');
+  if(!container||!state.selectedDate) return;
+  const record=state.dailyData?.[state.selectedDate]||{};
+  const journalParts=[];
+  if(record.journal?.text) journalParts.push(record.journal.text);
+  if(record.dayRating) journalParts.push(`Day rating: ${ratingLabels[record.dayRating]}`);
+  const wellness=record.wellness||{};
+  const wellnessParts=[];
+  if(wellness.breathing) wellnessParts.push(`Breathing: ${wellness.breathing.cycles||0} of ${wellness.breathing.goal||3} cycles completed`);
+  if(wellness.sleep){
+    const sleep=wellness.sleep;
+    const sleepInfo=[];
+    if(sleep.bed&&sleep.wake) sleepInfo.push(`Bedtime ${sleep.bed} · Wake ${sleep.wake}`);
+    if(sleep.rating) sleepInfo.push(`Quality: ${sleep.rating}/5 stars`);
+    if(sleep.notes) sleepInfo.push(`Notes: ${sleep.notes}`);
+    if(sleep.bed&&sleep.wake){
+      const [bh,bm]=sleep.bed.split(':').map(Number);
+      const [wh,wm]=sleep.wake.split(':').map(Number);
+      let minutes=wh*60+wm-(bh*60+bm);
+      if(minutes<0) minutes+=1440;
+      sleepInfo.push(`Duration: ${Math.floor(minutes/60)}h ${minutes%60}m`);
+    }
+    if(sleepInfo.length) wellnessParts.push(`Sleep: ${sleepInfo.join(' · ')}`);
+  }
+  if(wellness.water) wellnessParts.push(`Hydration: ${wellness.water.glasses||0} of ${wellness.water.goal||8} glasses`);
+  container.innerHTML=`
+    <div class="cal-detail-date">${formatDateKey(state.selectedDate)}</div>
+    <div class="cal-detail-section"><h4>Journal</h4><p class="${journalParts.length?'':'cal-empty'}"></p></div>
+    <div class="cal-detail-section"><h4>Wellness</h4><p class="${wellnessParts.length?'':'cal-empty'}"></p></div>`;
+  const paragraphs=container.querySelectorAll('.cal-detail-section p');
+  paragraphs[0].textContent=journalParts.join('\n\n')||'No journal entry or day rating for this day.';
+  paragraphs[1].textContent=wellnessParts.join('\n\n')||'No wellness information for this day.';
+}
+
+// Breathing — 4-4-6
+let breathRunning=false, breathInterval=null;
+const breathPhases=[
+  {label:'Breathe in',dur:4,color:'var(--lav)',bg:'var(--lav-bg)'},
+  {label:'Hold',dur:4,color:'var(--rose)',bg:'var(--rose-bg)'},
+  {label:'Breathe out',dur:6,color:'var(--mint)',bg:'var(--mint-bg)'},
+];
+let breathPhaseIdx=0, breathSec=4;
+
+function toggleBreath(){
+  if(breathRunning){
+    clearInterval(breathInterval); breathRunning=false;
+    document.getElementById('breath-start-btn').textContent='▶ Start';
+    document.getElementById('breath-phase').textContent='Paused';
+  } else {
+    breathRunning=true;
+    document.getElementById('breath-start-btn').textContent='⏸ Pause';
+    breathTick();
+    breathInterval=setInterval(breathTick,1000);
+  }
+}
+
+function breathTick(){
+  const ph=breathPhases[breathPhaseIdx];
+  document.getElementById('breath-num').textContent=breathSec;
+  document.getElementById('breath-phase').textContent=ph.label.toUpperCase();
+  const pct=(breathSec/ph.dur)*100;
+  document.getElementById('breath-ring').style.background=
+    `conic-gradient(${ph.color} ${pct}%, ${ph.bg} 0%)`;
+  document.getElementById('breath-ring').style.boxShadow=`0 0 0 8px ${ph.bg}`;
+  breathSec--;
+  if(breathSec<0){
+    breathPhaseIdx=(breathPhaseIdx+1)%3;
+    if(breathPhaseIdx===0){
+      const record=ensureDayRecord(state.selectedDate);
+      record.wellness=record.wellness||{};
+      record.wellness.breathing=record.wellness.breathing||{cycles:0,goal:3};
+      record.wellness.breathing.cycles++;
+      state.breathCycles=record.wellness.breathing.cycles;
+      document.getElementById('breath-cycles').textContent=state.breathCycles;
+      saveState();
+      buildCal();
+      updateSummary();
+    }
+    breathSec=breathPhases[breathPhaseIdx].dur;
+  }
+}
+
+function resetBreath(){
+  clearInterval(breathInterval); breathRunning=false; breathPhaseIdx=0; breathSec=4;
+  document.getElementById('breath-num').textContent='4';
+  document.getElementById('breath-phase').textContent='Tap to begin';
+  document.getElementById('breath-start-btn').textContent='▶ Start';
+  document.getElementById('breath-ring').style.background='conic-gradient(var(--lav-bg) 0%, var(--lav-bg) 100%)';
+  document.getElementById('breath-ring').style.boxShadow='0 0 0 8px var(--lav-bg)';
+}
+
+// Water
+function buildCups(){
+  const r=document.getElementById('cups-row');
+  if(!r) return;
+  r.innerHTML=Array.from({length:8},(_,i)=>
+    `<div class="cup ${i<state.waterCount?'filled':''}" onclick="drinkCup(${i})"></div>`
+  ).join('');
+}
+
+function drinkCup(i){
+  state.waterCount=i+1;
+  const record=ensureDayRecord(state.selectedDate);
+  record.wellness=record.wellness||{};
+  record.wellness.water={glasses:state.waterCount,goal:8};
+  document.getElementById('water-num').textContent=state.waterCount;
+  buildCups(); saveState(); updateSummary(); buildCal();
+  if(state.waterCount===8) toast('💧','Hydration goal met!','8 glasses done! 🎉');
+  else toast('💧',`${state.waterCount}/8 glasses`,'Keep going!');
+}
+
+function resetWater(){
+  state.waterCount=0;
+  const record=state.dailyData?.[state.selectedDate];
+  if(record?.wellness?.water) delete record.wellness.water;
+  document.getElementById('water-num').textContent=0;
+  buildCups(); saveState(); updateSummary(); buildCal();
+}
+
+// Sleep
+function buildSleepStars(){
+  const ss=document.getElementById('sleep-stars');
+  if(!ss) return;
+  ss.innerHTML=[1,2,3,4,5].map(n=>`
+    <span class="sleep-star ${n<=state.sleepRatingVal?'lit':''}" role="button" tabindex="0" aria-label="Rate sleep ${n} out of 5" onclick="setSleepStar(${n})">⭐</span>
+  `).join('');
+}
+
+function setSleepStar(n){
+  state.sleepRatingVal=n;
+  const record=ensureDayRecord(state.selectedDate);
+  record.wellness=record.wellness||{};
+  record.wellness.sleep={...(record.wellness.sleep||{}),bed:document.getElementById('s-bed').value,
+    wake:document.getElementById('s-wake').value,rating:n,notes:document.getElementById('dream-input').value};
+  buildSleepStars(); saveState(); buildCal(); updateSummary(); toast('⭐','Sleep rated!','');
+}
+
+function calcSleep(persist=false){
+  const bed=document.getElementById('s-bed')?.value;
+  const wake=document.getElementById('s-wake')?.value;
+  if(!bed||!wake) return;
+  state.sleepBed=bed; state.sleepWake=wake;
+  const [bh,bm]=bed.split(':').map(Number);
+  const [wh,wm]=wake.split(':').map(Number);
+  let mins=(wh*60+wm)-(bh*60+bm);
+  if(mins<0) mins+=1440;
+  const h=Math.floor(mins/60),m=mins%60;
+  document.getElementById('sleep-dur').textContent=`${h}h ${m}m`;
+  const notes=[['😴','Needs more rest.','Rest more tonight.'],['🛌','A bit short.','Almost there.'],['🌙','Decent rest.','Pretty good.'],['😊','Good sleep!','Well done!'],['🌿','Excellent rest!','Wonderful!']];
+  const idx=Math.min(4,Math.max(0,Math.floor(h/1.6)-1));
+  document.getElementById('sleep-note').textContent=`${notes[idx][0]} ${h>=8?notes[4][1]:notes[idx][1]}`;
+  if(persist){
+    const record=ensureDayRecord(state.selectedDate);
+    record.wellness=record.wellness||{};
+    record.wellness.sleep={...(record.wellness.sleep||{}),bed,wake,
+      rating:state.sleepRatingVal||0,notes:document.getElementById('dream-input')?.value||''};
+    saveState();
+    buildCal();
+    updateSummary();
+  }
+}
+
+document.addEventListener('change',e=>{
+  if(e.target.id==='s-bed'||e.target.id==='s-wake') calcSleep(true);
+});
+
+// Dream notes
+document.addEventListener('input',e=>{
+  if(e.target.id==='dream-input'){
+    state.dreamNotes=e.target.value;
+    const record=ensureDayRecord(state.selectedDate);
+    record.wellness=record.wellness||{};
+    record.wellness.sleep={...(record.wellness.sleep||{}),bed:document.getElementById('s-bed').value,
+      wake:document.getElementById('s-wake').value,rating:state.sleepRatingVal||0,notes:e.target.value};
+    saveState();
+    buildCal();
+    updateSummary();
+  }
+});
+
+// Affirmation
+const affs=[
+  'I am worthy of love and peace.',
+  'I choose peace, joy, and growth today.',
+  'I trust the journey, even in uncertainty.',
+  'My potential is limitless.',
+  'I release what no longer serves me.',
+  'My feelings are valid and important.',
+  'I am becoming my best self.',
+  'Today I will be gentle with myself.',
+  'I attract good things into my life.',
+  'I am resilient, strong, and capable.',
+];
+
+function updateAff(){ const el=document.getElementById('aff-text'); if(el) el.textContent=affs[state.affIdx||0]; }
+function nextAff(){ state.affIdx=(state.affIdx+1)%affs.length; updateAff(); saveState(); toast('✨','New affirmation','Say it with conviction!'); }
+
+// ═══════════════════════════════════════
+// MODAL / TOAST
+// ═══════════════════════════════════════
+function openModal(title,body){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
+
+let _tt;
+function toast(icon,title,msg){
+  document.getElementById('t-icon').textContent=icon;
+  document.getElementById('t-title').textContent=title;
+  document.getElementById('t-msg').textContent=msg;
+  document.getElementById('toast-el').classList.add('show');
+  clearTimeout(_tt); _tt=setTimeout(()=>document.getElementById('toast-el').classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════
+// AUTO-CHECK SESSION
+// ═══════════════════════════════════════
+(function checkSession(){
+  const last=localStorage.getItem('bloom_session');
+  if(last&&users[last]){
+    launchApp(last);
+  }
+})();
+
+// Save session on login helpers
+const _orig=launchApp;
+function launchApp(email){
+  localStorage.setItem('bloom_session',email);
+  currentUser=email;
+  loadState();
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+function doLogout(){
+  saveState();
+  localStorage.removeItem('bloom_session');
+  currentUser=null; state={};
+  document.getElementById('auth-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  setAuthMode('login');
+}
+</script>
 </body>
 </html>
