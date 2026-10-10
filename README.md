@@ -46,7 +46,7 @@ Bloom helps users organize their tasks, express their thoughts through journalin
 1. Brainstormed the idea and planned the features.
 2. Built the frontend using vibe coding.
 3. Developed the backend.
-4. Set up Firebase for data storage.
+4. Set up Supabase for data storage.
 
 ## Our Mission
 
